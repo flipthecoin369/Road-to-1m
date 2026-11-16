@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Road to $1M Funded</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600;9..144,800&family=Manrope:wght@400;600;700&display=swap">
+<style>
+:root{--bg:#0b1a13;--panel:#12261c;--line:#24402f;--text:#efe9d6;--mute:#93a799;--gold:#e0b84f;--mint:#5fd39a;color-scheme:dark;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+html{scroll-padding-top:env(safe-area-inset-top,0px)}
+*,*::before,*::after{box-sizing:inherit}
+body{margin:0;background:radial-gradient(900px 500px at 80% -10%,#1b3a2a 0,transparent 60%),var(--bg);color:var(--text);font:400 15px/1.5 Manrope,system-ui,sans-serif}
+main{max-width:640px;margin:0 auto;padding:24px 16px 64px}
+h1{font:800 clamp(30px,8vw,44px)/1.05 Fraunces,Georgia,serif;margin:0 0 8px;letter-spacing:-.02em}
+.sub{color:var(--mute);margin:0 0 20px;max-width:46ch}
+.hero{background:var(--panel);border:1px solid var(--line);border-radius:14px;padding:18px}
+.big{font:800 clamp(38px,12vw,56px)/1 Fraunces,Georgia,serif;color:var(--gold)}
+.big small{font:600 16px Manrope,sans-serif;color:var(--mint);margin-left:8px}
+.bar{height:12px;border-radius:99px;background:#0a1510;border:1px solid var(--line);margin:14px 0 6px;overflow:hidden}
+.bar i{display:block;height:100%;background:linear-gradient(90deg,var(--mint),var(--gold));border-radius:99px;transition:width .5s}
+.ends{display:flex;justify-content:space-between;color:var(--mute);font-size:13px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin-top:16px}
+.stats div{border-top:1px solid var(--line);padding-top:8px}
+.stats b{display:block;font:700 18px Fraunces,Georgia,serif}
+.stats span{color:var(--mute);font-size:12px}
+.pos{color:var(--mint)}.neg{color:#e58a7a}
+h2{font:800 24px Fraunces,Georgia,serif;margin:32px 0 4px}
+.tl{position:relative;margin:16px 0 0;padding-left:34px}
+.tl::before{content:"";position:absolute;left:11px;top:8px;bottom:8px;width:2px;background:var(--line)}
+.st{position:relative;padding:0 0 22px}
+.dot{position:absolute;left:-34px;top:2px;width:24px;height:24px;border-radius:50%;border:2px solid var(--line);background:var(--bg);display:grid;place-items:center;font-size:13px;color:var(--bg)}
+.done .dot{background:var(--mint);border-color:var(--mint)}
+.now .dot{border-color:var(--gold);box-shadow:0 0 0 4px rgba(224,184,79,.2)}
+.now .dot::after{content:"";width:8px;height:8px;border-radius:50%;background:var(--gold)}
+.lock{opacity:.55}
+.size{font:800 26px Fraunces,Georgia,serif}
+.cap{color:var(--mute);font-size:14px}
+.row{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px;align-items:end}
+label{display:grid;gap:3px;color:var(--mute);font-size:12px}
+input,select{background:#0a1510;color:var(--text);border:1px solid var(--line);border-radius:8px;padding:8px 10px;font:inherit;width:112px}
+button{font:700 14px Manrope,sans-serif;border:0;border-radius:8px;padding:10px 14px;cursor:pointer;background:var(--gold);color:#1b1503}
+button.ghost{background:transparent;color:var(--mute);border:1px solid var(--line)}
+:focus-visible{outline:2px solid var(--mint);outline-offset:2px}
+.foot{display:flex;gap:8px;margin-top:8px}
+</style>
+</head>
+<body>
+<main>
+<h1>Road to $1,000,000 funded</h1>
+<p class="sub">Started with $35. Pass the challenge, get funded, take a payout, buy the next bigger challenge. Repeat until $1M.</p>
+<section class="hero" id="hero"></section>
+<h2>The plan</h2>
+<p class="cap" style="margin:0">Fund → payout → bigger challenge. Edit any size or fee to fit your path.</p>
+<div class="tl" id="tl"></div>
+<div class="foot"><button id="add">Add stage</button><button class="ghost" id="reset">Reset all</button></div>
+</main>
+<script>
+const KEY="road-to-1m-v1",GOAL=1e6,SIZES=[6000,15000,25000,50000,100000,200000];
+const def=()=>({s:[6000,50000,100000,200000,200000,200000,200000,50000].map((z,i)=>({size:z,fee:i?0:35,phase:0,payout:0}))});
+let S;
+try{S=JSON.parse(localStorage.getItem(KEY))}catch(e){}
+if(!S||!Array.isArray(S.s))S=def();
+const save=()=>{try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}};
+const $=n=>"$"+Math.round(n).toLocaleString("en-US");
+const k=n=>n>=1000?"$"+n/1000+"K":"$"+n;
+function render(){
+ const funded=S.s.reduce((a,x)=>a+(x.phase>=1?x.size:0),0);
+ const fees=S.s.reduce((a,x)=>a+(+x.fee||0),0);
+ const pay=S.s.reduce((a,x)=>a+(x.phase>=2?+x.payout||0:0),0);
+ const net=pay-fees,pct=Math.min(100,funded/GOAL*100);
+ document.getElementById("hero").innerHTML=
+ `<span class="cap">Funded now</span><div class="big">${$(funded)}<small>${pct.toFixed(1)}%</small></div>
+ <div class="bar"><i style="width:${pct}%"></i></div>
+ <div class="ends"><span>$0</span><span>Goal $1,000,000</span></div>
+ <div class="stats"><div><b>${$(pay)}</b><span>Payouts received</span></div><div><b>${$(fees)}</b><span>Fees spent</span></div><div><b class="${net>=0?"pos":"neg"}">${net<0?"-":""}${$(Math.abs(net))}</b><span>Net profit</span></div></div>`;
+ const cur=S.s.findIndex(x=>x.phase<2);
+ document.getElementById("tl").innerHTML=S.s.map((x,i)=>{
+  const st=x.phase>=2?"done":i===cur?"now":"lock";
+  const cap=x.phase>=2?`Payout received: ${$(x.payout)}.`:x.phase===1?"Funded. Request your payout.":i===cur?"Challenge in progress.":i?"Bought with the previous payout.":"Your own money buys the first challenge.";
+  const act=i>cur&&cur>=0?"":x.phase===0?`<button data-a="fund" data-i="${i}">Passed, now funded</button>`:x.phase===1?`<button data-a="pay" data-i="${i}">Log payout</button><button class="ghost" data-a="undo" data-i="${i}">Undo</button>`:`<button class="ghost" data-a="undo" data-i="${i}">Undo</button>`;
+  return `<div class="st ${st}"><span class="dot">${x.phase>=2?"✓":""}</span>
+  <div class="cap">Stage ${i+1}</div><div class="size">${k(x.size)} funded account</div><div class="cap">${cap}</div>
+  <div class="row"><label>Size<select data-f="size" data-i="${i}">${SIZES.map(z=>`<option value="${z}"${z===x.size?" selected":""}>${k(z)}</option>`).join("")}</select></label>
+  <label>Challenge fee ($)<input type="number" min="0" step="1" value="${x.fee}" data-f="fee" data-i="${i}"></label>
+  ${x.phase>=1?`<label>Payout ($)<input type="number" min="0" step="1" value="${x.payout||""}" data-f="payout" data-i="${i}"></label>`:""}
+  ${act}</div></div>`}).join("");
+}
+document.addEventListener("change",e=>{const t=e.target,i=t.dataset.i;if(i==null)return;S.s[i][t.dataset.f]=+t.value||0;save();render()});
+document.addEventListener("click",e=>{const t=e.target,a=t.dataset.a,i=t.dataset.i;
+ if(a==="fund")S.s[i].phase=1;
+ else if(a==="pay"){if(!(S.s[i].payout>0)){alert("Enter your payout amount first.");return}S.s[i].phase=2}
+ else if(a==="undo")S.s[i].phase=Math.max(0,S.s[i].phase-1);
+ else if(t.id==="add")S.s.push({size:200000,fee:0,phase:0,payout:0});
+ else if(t.id==="reset"){if(!confirm("Reset the whole tracker?"))return;S=def()}
+ else return;
+ save();render()});
+render();
+</script>
+</body>
+</html>
